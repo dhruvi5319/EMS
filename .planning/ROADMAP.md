@@ -57,7 +57,7 @@ Plans:
 - [ ] 02-06-PLAN.md — Audit trail view: AuditEventCard, ActionCodeBadge, AuditTrailFilters, AuditTimeline, pagination, Playwright E2E
 
 ### Phase 3: Intake and Gate A1
-**Status**: executing
+**Status**: awaiting verify
 **Goal**: An Engagement Acceptance Lead can create and submit a request, and either approve it (automatically creating an engagement shell with audit trail) or decline it with recorded rationale
 **Depends on**: Phase 2
 **Requirements**: F2, F3
