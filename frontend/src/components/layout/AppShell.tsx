@@ -4,7 +4,7 @@ import { TopBar } from './TopBar';
 
 export function AppShell() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <TopBar />
       <Sidebar />
       <main
