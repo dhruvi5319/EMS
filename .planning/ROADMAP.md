@@ -77,7 +77,7 @@ Plans:
 - [ ] 03-05-PLAN.md — Gate A1 Decision Panel (RadioGroup, AlertDialog, post-approval banner) + Review Queue page
 
 ### Phase 4: Engagement Setup and Gate P2
-**Status**: In Progress
+**Status**: executing
 **Goal**: An Engagement Manager can fully set up an accepted engagement — metadata, team, milestones, and planning record — and a QA Reviewer can approve the planning baseline, locking it at Gate P2
 **Depends on**: Phase 3
 **Requirements**: F4, F5, F6, F7
