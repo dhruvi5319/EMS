@@ -9,6 +9,7 @@ import { AuditTrailPage } from './pages/AuditTrailPage';
 import { RequestListPage } from '@/pages/requests/RequestListPage';
 import { RequestFormPage } from '@/pages/requests/RequestFormPage';
 import { RequestDetailPage } from '@/pages/requests/RequestDetailPage';
+import { ReviewQueuePage } from '@/pages/requests/ReviewQueuePage';
 
 // ProtectedRoute — unauthenticated → /login
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -112,7 +113,7 @@ function AppRoutes() {
           path="/review-queue"
           element={
             <RoleGuard roles={['AL', 'QA', 'IR', 'PC', 'AD']}>
-              <div className="text-sm text-muted-foreground">Review Queue — Phase 3</div>
+              <ReviewQueuePage />
             </RoleGuard>
           }
         />

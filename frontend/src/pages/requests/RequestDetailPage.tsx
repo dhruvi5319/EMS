@@ -3,6 +3,8 @@ import { FileText, Pencil } from 'lucide-react';
 import { useRequest } from '@/hooks/useRequests';
 import { useAuthContext } from '@/context/AuthContext';
 import { RequestStatusBadge } from '@/components/requests/RequestStatusBadge';
+import { GateA1Panel } from '@/components/requests/GateA1Panel';
+import { GateA1DecidedCard } from '@/components/requests/GateA1DecidedCard';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -136,19 +138,32 @@ export function RequestDetailPage() {
 
       <Separator className="my-4" />
 
-      {/* Gate A1 Decision section — GateA1Panel injected here in Plan 03-05 */}
+      {/* Gate A1 Decision section */}
       <div className="mb-4" data-section="gate-a1">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Gate A1 Decision</p>
-        {request.status === 'submitted' ? (
-          <p className="text-sm text-muted-foreground">
-            {/* GateA1Panel rendered here in Plan 03-05 when user has AL/AD role */}
-            Awaiting Gate A1 decision.
-          </p>
-        ) : request.status === 'accepted' || request.status === 'declined' ? (
-          <p className="text-sm text-muted-foreground">
-            {/* GateA1DecidedCard rendered here in Plan 03-05 */}
-            Decision recorded.
-          </p>
+        {request.status === 'submitted' && isAL ? (
+          <GateA1Panel
+            requestId={request.id}
+            topic={request.topic}
+            onDecisionRecorded={(_result) => {
+              // Trigger refetch of request to reflect status change
+              window.location.reload();
+            }}
+          />
+        ) : request.status === 'submitted' && !isAL ? (
+          <p className="text-sm text-muted-foreground">Awaiting Gate A1 decision.</p>
+        ) : (request.status === 'accepted' || request.status === 'declined') ? (
+          // TODO: fetch gate_decision from API in Phase 4 enhancement
+          // For now show status-based placeholder that matches the decided card shape
+          <GateA1DecidedCard
+            decision={{
+              id: 'placeholder',
+              decision: request.status as 'approved' | 'declined',
+              risk_level: null,
+              rationale: 'Decision recorded.',
+              decided_at: request.updated_at,
+            }}
+          />
         ) : (
           <p className="text-sm text-muted-foreground">Request is in Draft status — submit to trigger Gate A1 review.</p>
         )}
