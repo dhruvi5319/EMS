@@ -7,6 +7,7 @@ import { GateStatusCardRow } from '@/components/engagements/GateStatusCardRow';
 import { BlockerPanel } from '@/components/engagements/BlockerPanel';
 import { TeamPanel } from '@/components/engagements/TeamPanel';
 import { PlanningRecordPanel } from '@/components/engagements/PlanningRecordPanel';
+import { EvidenceListPage } from '@/pages/engagements/EvidenceListPage';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthContext } from '@/context/AuthContext';
@@ -199,7 +200,7 @@ export function EngagementShellPage() {
         </TabsContent>
 
         <TabsContent value="evidence">
-          <PlaceholderPanel name="Evidence" />
+          <EvidenceListPage />
         </TabsContent>
 
         <TabsContent value="findings">
