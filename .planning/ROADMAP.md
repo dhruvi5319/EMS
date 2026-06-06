@@ -100,7 +100,7 @@ Plans:
 - [x] 04-07-PLAN.md — Gate P2 Review UI (F7): GateP2ReviewPanel, ApproveP2ConfirmDialog, ReturnP2ConfirmDialog, post-decision redirects, Playwright E2E
 
 ### Phase 5: Evidence, Findings, and Gate P3
-**Status**: passed
+**Status**: In Progress
 **Goal**: Analysts can upload and manage evidence, link evidence to objectives, create findings, and a QA Reviewer can mark all objectives sufficient and approve Gate P3
 **Depends on**: Phase 4
 **Requirements**: F8, F9, F10
