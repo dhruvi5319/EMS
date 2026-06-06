@@ -3,14 +3,14 @@ pivota_spec_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 05-06-PLAN.md
-last_updated: "2026-06-06T21:57:11.792Z"
+stopped_at: Completed 05-05-PLAN.md
+last_updated: "2026-06-06T21:58:24.876Z"
 last_activity: "2026-06-05 — Phase 4 complete: all backend APIs (F4/F5/F6/F7) + full frontend UI (engagement shell, team, milestones, planning record, Gate P2 review)"
 progress:
   total_phases: 6
   completed_phases: 4
   total_plans: 37
-  completed_plans: 27
+  completed_plans: 28
   percent: 62
 ---
 
@@ -83,6 +83,7 @@ Progress: [████████░░] 62%
 | Phase 05-evidence-findings-and-gate-p3 P02 | 4min | 2 tasks | 4 files |
 | Phase 05-evidence-findings-and-gate-p3 P04 | 12min | 2 tasks | 13 files |
 | Phase 05-evidence-findings-and-gate-p3 P06 | 4min | 2 tasks | 10 files |
+| Phase 05-evidence-findings-and-gate-p3 P05 | 6min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -157,6 +158,9 @@ Recent decisions affecting current work:
 - [Phase 05-evidence-findings-and-gate-p3]: Sheet component wraps @radix-ui/react-dialog — @radix-ui/react-sheet does not exist as npm package; shadcn Sheet is dialog + slide-in CSS variants
 - [Phase 05-evidence-findings-and-gate-p3]: EvidenceFileUpload uses raw fetch() for FormData multipart (same as IntakeFileUpload Phase 3); api.ts Content-Type: application/json breaks file uploads
 - [Phase 05-evidence-findings-and-gate-p3]: SufficiencyChip created as Rule 3 auto-fix (Plan 05-05 was skipped; required import for ObjectiveSufficiencySummary)
+- [Phase 05-evidence-findings-and-gate-p3]: Added GET /evidence/:evidence_id endpoint (missing from Plan 05-01) — needed for EvidenceDetailPage
+- [Phase 05-evidence-findings-and-gate-p3]: GapObjectiveCard uses onLinkClick callback (not embedded LinkObjectivePopover) — parent context determines link target
+- [Phase 05-evidence-findings-and-gate-p3]: E2E tests for evidence-detail.spec.ts written as artifacts; execution deferred to verify phase
 
 ### Pending Todos
 
@@ -168,6 +172,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-06T21:57:11.790Z
-Stopped at: Completed 05-06-PLAN.md
+Last session: 2026-06-06T21:58:24.874Z
+Stopped at: Completed 05-05-PLAN.md
 Resume file: None
