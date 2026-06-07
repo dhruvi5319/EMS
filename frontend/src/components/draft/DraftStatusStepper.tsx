@@ -31,7 +31,6 @@ export function DraftStatusStepper({ currentStatus }: DraftStatusStepperProps) {
         {STEPS.map((step, index) => {
           const isCompleted = index < activeIndex;
           const isActive = index === activeIndex;
-          const isUpcoming = index > activeIndex;
           const isLast = index === STEPS.length - 1;
 
           let stateLabel: string;
