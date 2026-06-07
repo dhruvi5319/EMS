@@ -2,15 +2,15 @@
 pivota_spec_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Completed 05-08-PLAN.md
-last_updated: "2026-06-06T22:08:57.902Z"
-last_activity: "2026-06-05 — Phase 4 complete: all backend APIs (F4/F5/F6/F7) + full frontend UI (engagement shell, team, milestones, planning record, Gate P2 review)"
+status: verifying
+stopped_at: Completed 06-02-PLAN.md
+last_updated: "2026-06-07T00:20:28.509Z"
+last_activity: "2026-06-06 — Phase 5 complete: Evidence registry (F8), objective-evidence linking + gap view (F9), findings + sufficiency + Gate P3 approval (F10) — human verified"
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 37
-  completed_plans: 30
+  completed_plans: 31
   percent: 81
 ---
 
@@ -86,6 +86,7 @@ Progress: [████████░░] 81%
 | Phase 05-evidence-findings-and-gate-p3 P05 | 6min | 2 tasks | 14 files |
 | Phase 05-evidence-findings-and-gate-p3 P07 | 5min | 2 tasks | 10 files |
 | Phase 05-evidence-findings-and-gate-p3 P08 | 0min | 1 tasks | 1 files |
+| Phase 06-draft-reference-check-gate-p4-and-dashboard P02 | 3min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -166,6 +167,8 @@ Recent decisions affecting current work:
 - [Phase 05-evidence-findings-and-gate-p3]: P3DecisionPanel uses aria-disabled + Tooltip wrapper on Approve P3 button (not HTML disabled) — allows tooltip on disabled state per UI-SPEC
 - [Phase 05-evidence-findings-and-gate-p3]: Post-P3-approval green banner uses react-router location state (p3Approved: true) read in EngagementShellPage on mount; dismissed by local state
 - [Phase 05-evidence-findings-and-gate-p3]: Phase 5 human verification passed — all 31 steps confirmed, Phase 6 unblocked
+- [Phase 06-draft-reference-check-gate-p4-and-dashboard]: Statements adapted to actual DB schema: draft_product_id FK bridge (not direct engagement_id), display_order, no waived/assigned_back_to columns; STATEMENT_DISCREPANCY_ASSIGNED audit event uses action/object_type/after_state pattern
+- [Phase 06-draft-reference-check-gate-p4-and-dashboard]: /export placeholder registered BEFORE /:id in engagements.ts to prevent parameterized route capture — pattern for all future /export routes
 
 ### Pending Todos
 
@@ -177,6 +180,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-06T22:08:57.900Z
-Stopped at: Completed 05-08-PLAN.md
+Last session: 2026-06-07T00:20:28.507Z
+Stopped at: Completed 06-02-PLAN.md
 Resume file: None
