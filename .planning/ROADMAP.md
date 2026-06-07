@@ -123,6 +123,7 @@ Plans:
 - [ ] 05-08-PLAN.md — Human verify: complete F8/F9/F10 workflow (evidence, linking, findings, Gate P3 approval)
 
 ### Phase 6: Draft Product, Reference Check, Gate P4, and Dashboard
+**Status**: In Progress
 **Goal**: The team can create and track a draft product, an Independent Referencer can check all statements against evidence, and the Publishing Coordinator can approve Gate P4, completing the engagement; the portfolio dashboard shows all engagements
 **Depends on**: Phase 5
 **Requirements**: F11, F12, F13, F14
