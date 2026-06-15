@@ -434,6 +434,16 @@ export async function uploadFile(
     })
     .returning('*');
 
+  // Audit (PRD §6.3): evidence uploads must be logged.
+  await db('audit_events').insert({
+    engagement_id: engagementId,
+    actor_id: actorId,
+    action: 'EVIDENCE_FILE_UPLOADED',
+    object_type: 'evidence',
+    object_id: evidenceId,
+    summary: `Uploaded file "${file.originalname}" to evidence item.`,
+  });
+
   return toEvidenceFile(row);
 }
 

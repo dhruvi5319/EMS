@@ -2,7 +2,7 @@ import { db } from '../db';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export type RefStatus = 'not_started' | 'in_review' | 'passed' | 'failed';
+export type RefStatus = 'not_started' | 'in_review' | 'passed' | 'failed' | 'waived';
 
 export interface Statement {
   id: string;
@@ -242,7 +242,7 @@ export async function updateStatement(
 
   // ref_status validation
   if (data.ref_status !== undefined) {
-    const validStatuses: RefStatus[] = ['not_started', 'in_review', 'passed', 'failed'];
+    const validStatuses: RefStatus[] = ['not_started', 'in_review', 'passed', 'failed', 'waived'];
     if (!validStatuses.includes(data.ref_status as RefStatus)) {
       throw Object.assign(
         new Error(`Invalid ref_status. Must be one of: ${validStatuses.join(', ')}.`),

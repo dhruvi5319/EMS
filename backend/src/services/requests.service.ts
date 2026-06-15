@@ -24,16 +24,12 @@ export interface RequestRecord {
   updated_at: string;
 }
 
-function formatRequestId(request_number: number, created_at: Date | string): string {
-  const year = new Date(created_at).getFullYear();
-  return `REQ-${year}-${String(request_number).padStart(5, '0')}`;
-}
-
 function toRecord(row: Record<string, unknown>): RequestRecord {
   return {
     id: row.id as string,
     request_number: row.request_number as number,
-    request_id_display: formatRequestId(row.request_number as number, row.created_at as string),
+    // request_number already holds the formatted display id (e.g. REQ-2026-0001).
+    request_id_display: String(row.request_number),
     request_type: row.request_type as RequestType | null,
     requester_name: row.requester_name as string | null,
     requester_org: row.requester_org as string | null,
@@ -42,9 +38,9 @@ function toRecord(row: Record<string, unknown>): RequestRecord {
     due_date: row.due_date ? (new Date(row.due_date as string | Date)).toISOString().split('T')[0] : null,
     notes: row.notes as string | null,
     status: row.status as RequestStatus,
-    file_ref: row.file_ref as string | null,
-    filename: row.filename as string | null,
-    file_size: row.file_size as number | null,
+    file_ref: row.intake_file_ref as string | null,
+    filename: row.intake_filename as string | null,
+    file_size: row.intake_file_size as number | null,
     created_by: row.created_by as string,
     created_at: row.created_at instanceof Date ? (row.created_at as Date).toISOString() : (row.created_at as string),
     updated_at: row.updated_at instanceof Date ? (row.updated_at as Date).toISOString() : (row.updated_at as string),
@@ -148,7 +144,7 @@ export async function updateRequest(
   return toRecord(row);
 }
 
-export async function submitRequest(id: string): Promise<RequestRecord> {
+export async function submitRequest(id: string, actorId?: string): Promise<RequestRecord> {
   const existing = await db('requests').where({ id }).first();
   if (!existing) throw Object.assign(new Error('Request not found'), { status: 404 });
   if (existing.status !== 'draft') {
@@ -174,6 +170,19 @@ export async function submitRequest(id: string): Promise<RequestRecord> {
     .where({ id })
     .update({ status: 'submitted', updated_at: db.fn.now() })
     .returning('*');
+
+  // Audit (PRD §6.3): request submission must be logged.
+  if (actorId) {
+    await db('audit_events').insert({
+      request_id: id,
+      actor_id: actorId,
+      action: 'REQUEST_SUBMITTED',
+      object_type: 'request',
+      object_id: id,
+      summary: `Request ${row.request_number} submitted.`,
+    });
+  }
+
   return toRecord(row);
 }
 
@@ -188,8 +197,8 @@ export async function uploadIntakeDocument(
   if (!existing) throw Object.assign(new Error('Request not found'), { status: 404 });
 
   // Delete previous file if exists
-  if (existing.file_ref) {
-    await storageProvider.delete(existing.file_ref);
+  if (existing.intake_file_ref) {
+    await storageProvider.delete(existing.intake_file_ref);
   }
 
   const { file_ref } = await storageProvider.save(fileBuffer, originalFilename, mimeType);
@@ -197,9 +206,9 @@ export async function uploadIntakeDocument(
   await db('requests')
     .where({ id })
     .update({
-      file_ref,
-      filename: originalFilename,
-      file_size: fileSize,
+      intake_file_ref: file_ref,
+      intake_filename: originalFilename,
+      intake_file_size: fileSize,
       updated_at: db.fn.now(),
     });
 
@@ -210,10 +219,10 @@ export async function deleteIntakeDocument(id: string): Promise<void> {
   const existing = await db('requests').where({ id }).first();
   if (!existing) throw Object.assign(new Error('Request not found'), { status: 404 });
 
-  if (existing.file_ref) {
-    await storageProvider.delete(existing.file_ref);
+  if (existing.intake_file_ref) {
+    await storageProvider.delete(existing.intake_file_ref);
     await db('requests')
       .where({ id })
-      .update({ file_ref: null, filename: null, file_size: null, updated_at: db.fn.now() });
+      .update({ intake_file_ref: null, intake_filename: null, intake_file_size: null, updated_at: db.fn.now() });
   }
 }

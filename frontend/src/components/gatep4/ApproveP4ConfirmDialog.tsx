@@ -39,7 +39,7 @@ export const ApproveP4ConfirmDialog: React.FC<ApproveP4ConfirmDialogProps> = ({
   const handleConfirm = async () => {
     setLoading(true);
     try {
-      const result = await api.post(`/engagements/${engagementId}/gate/p4`, {
+      const result = await api.post(`/api/engagements/${engagementId}/gate/p4`, {
         decision: 'approved',
         outcome,
         comment,

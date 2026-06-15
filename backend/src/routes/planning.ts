@@ -10,6 +10,7 @@ import {
   deleteObjective,
   recordP2Decision,
   requestRevision,
+  setIndependenceAffirmations,
 } from '../services/planning.service';
 
 // mergeParams: true so `:id` from the parent engagementsRouter is accessible
@@ -37,6 +38,31 @@ planningRouter.get('/planning', async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// PUT /api/engagements/:id/planning/independence — EM, AD set independence affirmations
+planningRouter.put(
+  '/planning/independence',
+  requireRole('EM', 'AD'),
+  async (req: Request, res: Response) => {
+    try {
+      const { affirmations } = req.body;
+      if (!Array.isArray(affirmations)) {
+        res.status(400).json({ error: 'affirmations array is required' });
+        return;
+      }
+      const result = await setIndependenceAffirmations(req.params.id, affirmations, req.user!.id);
+      res.json(result);
+    } catch (err: unknown) {
+      const error = err as { status?: number; message?: string };
+      if (error.status && error.status < 500) {
+        res.status(error.status).json({ error: error.message });
+        return;
+      }
+      console.error('PUT /planning/independence error:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
 
 // PUT /api/engagements/:id/planning — EM, AN, AD only
 planningRouter.put(

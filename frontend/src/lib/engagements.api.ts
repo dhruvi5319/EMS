@@ -31,6 +31,18 @@ export interface Blocker {
   link?: string;
 }
 
+export interface EngagementCounts {
+  team: number;
+  objectives: number;
+  evidence: number;
+  findings: number;
+  draft_status: string | null;
+  objectives_without_evidence: number;
+  reference_check_total: number;
+  reference_check_complete: number;
+  reference_check_pct: number;
+}
+
 export interface ListEngagementsParams {
   phase?: string;
   status?: string;
@@ -63,11 +75,13 @@ export async function getEngagement(id: string): Promise<{
   engagement: Engagement;
   gate_decisions: GateDecision[];
   blockers: Blocker[];
+  counts?: EngagementCounts;
 }> {
   const res = await api.get<{
     engagement: Engagement;
     gate_decisions: GateDecision[];
     blockers: Blocker[];
+    counts?: EngagementCounts;
   }>(`/api/engagements/${id}`);
   if (!res.ok) throw new Error(res.error);
   return res.data;

@@ -121,9 +121,10 @@ export function useDraftProduct(engagementId: string) {
 
   const fetchComments = useCallback(async (): Promise<DraftComment[]> => {
     setError(null);
-    const res = await api.get<{ comments: DraftComment[] }>(`/api/engagements/${engagementId}/draft/comments`);
+    const res = await api.get<{ comments: Array<DraftComment & { comment_text?: string }> }>(`/api/engagements/${engagementId}/draft/comments`);
     if (res.ok) {
-      return res.data.comments;
+      // Backend stores the body in `comment_text`; normalize to `text`.
+      return res.data.comments.map((c) => ({ ...c, text: c.text ?? c.comment_text ?? '' }));
     } else {
       setError(res.error);
       throw new Error(res.error);
@@ -132,9 +133,11 @@ export function useDraftProduct(engagementId: string) {
 
   const addComment = useCallback(async (text: string): Promise<DraftComment> => {
     setError(null);
-    const res = await api.post<{ comment: DraftComment }>(`/api/engagements/${engagementId}/draft/comments`, { text });
+    // Backend expects `comment_text` in the body and returns it on the object.
+    const res = await api.post<{ comment: DraftComment & { comment_text?: string } }>(`/api/engagements/${engagementId}/draft/comments`, { comment_text: text });
     if (res.ok) {
-      return res.data.comment;
+      const c = res.data.comment;
+      return { ...c, text: c.text ?? c.comment_text ?? '' };
     } else {
       setError(res.error);
       throw new Error(res.error);

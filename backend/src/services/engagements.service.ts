@@ -111,9 +111,26 @@ export async function listEngagements(
   return { engagements: rows.map(toRecord), total };
 }
 
+export interface EngagementCounts {
+  team: number;
+  objectives: number;
+  evidence: number;
+  findings: number;
+  draft_status: string | null;
+  objectives_without_evidence: number;
+  reference_check_total: number;
+  reference_check_complete: number;
+  reference_check_pct: number;
+}
+
 export async function getEngagement(
   id: string
-): Promise<{ engagement: EngagementRecord; gate_decisions: GateDecisionRecord[]; blockers: Blocker[] } | null> {
+): Promise<{
+  engagement: EngagementRecord;
+  gate_decisions: GateDecisionRecord[];
+  blockers: Blocker[];
+  counts: EngagementCounts;
+} | null> {
   const row = await db('engagements').where({ id }).first();
   if (!row) return null;
 
@@ -133,7 +150,50 @@ export async function getEngagement(
     blockers.push({ type: 'no_owner', message: 'No owner assigned.' });
   }
 
-  return { engagement, gate_decisions, blockers };
+  // Artifact counts for the engagement detail dashboard (PRD F15).
+  const n = (r: Record<string, unknown> | undefined): number =>
+    parseInt(String(r?.c ?? 0), 10);
+  const [teamC, objC, evC, findC, draftRow, objNoEvRow, stmtRow] = await Promise.all([
+    db('team_assignments').where({ engagement_id: id }).count('id as c').first(),
+    db('objectives').where({ engagement_id: id, status: 'active' }).count('id as c').first(),
+    db('evidence_items').where({ engagement_id: id }).count('id as c').first(),
+    db('findings').where({ engagement_id: id }).count('id as c').first(),
+    db('draft_products').where({ engagement_id: id }).first(),
+    db('objectives as o')
+      .where({ 'o.engagement_id': id, 'o.status': 'active' })
+      .whereNotExists(function () {
+        this.select('*')
+          .from('objective_evidence_links as oel')
+          .whereRaw('oel.objective_id = o.id');
+      })
+      .count('o.id as c')
+      .first(),
+    db('draft_statements as ds')
+      .join('draft_products as dp', 'dp.id', 'ds.draft_product_id')
+      .where('dp.engagement_id', id)
+      .select(
+        db.raw('count(*) as total'),
+        db.raw("count(*) FILTER (WHERE ds.ref_status IN ('passed','waived')) as done")
+      )
+      .first(),
+  ]);
+
+  const refTotal = parseInt(String((stmtRow as Record<string, unknown>)?.total ?? 0), 10);
+  const refDone = parseInt(String((stmtRow as Record<string, unknown>)?.done ?? 0), 10);
+
+  const counts: EngagementCounts = {
+    team: n(teamC),
+    objectives: n(objC),
+    evidence: n(evC),
+    findings: n(findC),
+    draft_status: draftRow ? ((draftRow as Record<string, unknown>).status as string) : null,
+    objectives_without_evidence: n(objNoEvRow),
+    reference_check_total: refTotal,
+    reference_check_complete: refDone,
+    reference_check_pct: refTotal > 0 ? Math.round((refDone / refTotal) * 100) : 0,
+  };
+
+  return { engagement, gate_decisions, blockers, counts };
 }
 
 export async function updateEngagement(

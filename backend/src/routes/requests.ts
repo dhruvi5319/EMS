@@ -88,7 +88,7 @@ requestsRouter.patch('/:id', requireRole('AL', 'AD'), async (req: Request, res: 
 // POST /api/requests/:id/submit — AL and AD
 requestsRouter.post('/:id/submit', requireRole('AL', 'AD'), async (req: Request, res: Response) => {
   try {
-    const request = await submitRequest(req.params.id);
+    const request = await submitRequest(req.params.id, req.user!.id);
     res.json({ request });
   } catch (err: unknown) {
     const error = err as { status?: number; message?: string; fields?: string[] };

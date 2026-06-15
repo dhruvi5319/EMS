@@ -14,6 +14,7 @@ import {
   getPlanningRecord,
   upsertPlanningRecord,
   submitPlanningRecord,
+  setIndependenceStatus,
   type PlanningRecord,
   type Objective,
 } from '@/lib/planning.api';
@@ -140,6 +141,13 @@ export function PlanningRecordPanel({
       setObjectives(planResult.objectives);
       setTeamMembers(teamResult.assignments);
 
+      // Hydrate independence radios from persisted affirmations.
+      const statusMap: Record<string, 'affirmed' | 'pending' | 'exception_noted'> = {};
+      for (const a of planResult.independence_affirmations ?? []) {
+        statusMap[a.user_id] = a.status;
+      }
+      setIndependenceStatuses(statusMap);
+
       if (planResult.planning_record) {
         setDesignApproach(planResult.planning_record.design_approach ?? '');
         setScheduleNotes(planResult.planning_record.schedule_notes ?? '');
@@ -184,6 +192,17 @@ export function PlanningRecordPanel({
         data_reliability_notes: dataReliabilityNotes || null,
       });
       setPlanningRecord(result.planning_record);
+      // Persist independence affirmations for all current team members so the
+      // P2 prerequisite (independence_status_complete) can be satisfied.
+      if (teamMembers.length > 0) {
+        await setIndependenceStatus(
+          engagementId,
+          teamMembers.map((m) => ({
+            user_id: m.user_id,
+            status: independenceStatuses[m.user_id] ?? 'pending',
+          }))
+        );
+      }
       setChecklistRefresh((n) => n + 1);
       const now = new Date();
       const timeStr = now.toLocaleTimeString('en-US', {
@@ -211,6 +230,15 @@ export function PlanningRecordPanel({
         risk_notes: riskNotes || null,
         data_reliability_notes: dataReliabilityNotes || null,
       });
+      if (teamMembers.length > 0) {
+        await setIndependenceStatus(
+          engagementId,
+          teamMembers.map((m) => ({
+            user_id: m.user_id,
+            status: independenceStatuses[m.user_id] ?? 'pending',
+          }))
+        );
+      }
     } catch { /* continue to submit */ }
 
     setSubmitting(true);

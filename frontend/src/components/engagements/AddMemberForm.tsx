@@ -63,7 +63,7 @@ export function AddMemberForm({ onAdded, onAddMember }: AddMemberFormProps) {
       return;
     }
     const res = await api.get<{ users: UserResult[] }>(
-      `/api/users?search=${encodeURIComponent(value)}`,
+      `/api/users/search?q=${encodeURIComponent(value)}`,
     );
     if (res.ok) setUsers(res.data.users);
   }

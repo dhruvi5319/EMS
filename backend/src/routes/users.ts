@@ -1,12 +1,34 @@
 import { Router, Request, Response } from 'express';
 import { authenticateSession } from '../middleware/auth';
 import { requireRole } from '../middleware/rbac';
-import { listUsers, createUser, updateUserRoles, deactivateUser, activateUser } from '../services/users.service';
+import { listUsers, searchUsers, createUser, updateUserRoles, deactivateUser, activateUser } from '../services/users.service';
 
 export const usersRouter = Router();
 
-// All user management routes require Admin role
-usersRouter.use(authenticateSession, requireRole('AD'));
+// All user routes require authentication.
+usersRouter.use(authenticateSession);
+
+// GET /api/users/search?q= — lightweight user lookup for assignment pickers
+// (e.g. adding engagement team members). Available to Engagement Managers and
+// Admins — the roles permitted to manage teams. Defined BEFORE the admin guard
+// below so it is not restricted to AD, and before "/:id" so it matches first.
+usersRouter.get('/search', requireRole('EM', 'AD'), async (req: Request, res: Response) => {
+  try {
+    const q = ((req.query.q as string) ?? '').trim();
+    if (q.length < 2) {
+      res.status(400).json({ error: 'Query must be at least 2 characters' });
+      return;
+    }
+    const users = await searchUsers(q);
+    res.json({ users });
+  } catch (err) {
+    console.error('Search users error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// All remaining user-management routes require Admin role.
+usersRouter.use(requireRole('AD'));
 
 // GET /api/users
 usersRouter.get('/', async (_req: Request, res: Response) => {

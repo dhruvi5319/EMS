@@ -73,16 +73,50 @@ function toObjective(row: Record<string, unknown>): Objective {
  * Get planning record with objectives for an engagement.
  * Note: Independence status is tracked on objectives.independence_confirmed field.
  */
+// UI tracks independence per team member as affirmed | pending | exception_noted.
+// The DB stores affirmed | conflict | recused (one row = a submitted status;
+// "pending" = no row). Map between the two vocabularies here.
+type UiAffirmStatus = 'affirmed' | 'pending' | 'exception_noted';
+
+export interface IndependenceAffirmation {
+  id: string;
+  engagement_id: string;
+  user_id: string;
+  status: UiAffirmStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+function toUiAffirmation(row: Record<string, unknown>): IndependenceAffirmation {
+  const dbStatus = row.status as string;
+  return {
+    id: row.id as string,
+    engagement_id: row.engagement_id as string,
+    user_id: row.user_id as string,
+    status: dbStatus === 'affirmed' ? 'affirmed' : 'exception_noted',
+    created_at: row.created_at as string,
+    updated_at: row.updated_at as string,
+  };
+}
+
+async function listAffirmations(engagementId: string): Promise<IndependenceAffirmation[]> {
+  const rows = await db('independence_affirmations').where({ engagement_id: engagementId });
+  return rows.map(toUiAffirmation);
+}
+
 export async function getPlanningRecord(engagementId: string): Promise<{
   planning_record: PlanningRecord | null;
   objectives: Objective[];
+  independence_affirmations: IndependenceAffirmation[];
 }> {
   const pr = await db('planning_records')
     .where({ engagement_id: engagementId })
     .first();
 
+  const independence_affirmations = await listAffirmations(engagementId);
+
   if (!pr) {
-    return { planning_record: null, objectives: [] };
+    return { planning_record: null, objectives: [], independence_affirmations };
   }
 
   const objectives = await db('objectives')
@@ -92,7 +126,41 @@ export async function getPlanningRecord(engagementId: string): Promise<{
   return {
     planning_record: toPlanningRecord(pr),
     objectives: objectives.map(toObjective),
+    independence_affirmations,
   };
+}
+
+// Persist independence affirmations for team members (Gate P2 prerequisite).
+// status 'pending' removes any existing row; affirmed/exception_noted upsert one.
+export async function setIndependenceAffirmations(
+  engagementId: string,
+  affirmations: Array<{ user_id: string; status: UiAffirmStatus }>,
+  actorId: string
+): Promise<{ independence_affirmations: IndependenceAffirmation[] }> {
+  for (const a of affirmations) {
+    if (a.status === 'pending') {
+      await db('independence_affirmations')
+        .where({ engagement_id: engagementId, user_id: a.user_id })
+        .delete();
+    } else {
+      const dbStatus = a.status === 'affirmed' ? 'affirmed' : 'conflict';
+      await db('independence_affirmations')
+        .insert({ engagement_id: engagementId, user_id: a.user_id, status: dbStatus })
+        .onConflict(['engagement_id', 'user_id'])
+        .merge({ status: dbStatus, updated_at: db.fn.now() });
+    }
+  }
+
+  await db('audit_events').insert({
+    engagement_id: engagementId,
+    actor_id: actorId,
+    action: 'INDEPENDENCE_STATUS_UPDATED',
+    object_type: 'engagement',
+    object_id: engagementId,
+    summary: `Independence status updated for ${affirmations.length} team member(s).`,
+  });
+
+  return { independence_affirmations: await listAffirmations(engagementId) };
 }
 
 /**

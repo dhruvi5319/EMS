@@ -64,9 +64,10 @@ export async function upsertMilestones(
   engagementId: string,
   milestones: Array<{ milestone_type: string; target_date: string }>,
 ): Promise<{ milestones: Milestone[] }> {
+  // Backend expects the request body to be a raw array of milestone objects.
   const res = await api.put<{ milestones: Milestone[] }>(
     `/api/engagements/${engagementId}/milestones`,
-    { milestones },
+    milestones,
   );
   if (!res.ok) throw { status: res.status, message: res.error };
   return res.data;

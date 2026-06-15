@@ -38,6 +38,39 @@ export async function listUsers(): Promise<UserRecord[]> {
   }));
 }
 
+// Search active users by name / email / username (for assignment pickers, e.g.
+// adding engagement team members). Returns minimal records with roles.
+export async function searchUsers(query: string, limit = 20): Promise<UserRecord[]> {
+  const like = `%${query}%`;
+  const users = await db('users')
+    .select('id', 'username', 'email', 'display_name', 'is_active')
+    .where('is_active', true)
+    .andWhere((qb) =>
+      qb
+        .whereRaw('display_name ILIKE ?', [like])
+        .orWhereRaw('email ILIKE ?', [like])
+        .orWhereRaw('username ILIKE ?', [like])
+    )
+    .orderBy('display_name')
+    .limit(limit);
+
+  const userIds = users.map((u: { id: string }) => u.id);
+  const roleRows = userIds.length
+    ? await db('user_roles').whereIn('user_id', userIds).select('user_id', 'role')
+    : [];
+
+  const rolesByUser: Record<string, string[]> = {};
+  for (const row of roleRows as Array<{ user_id: string; role: string }>) {
+    if (!rolesByUser[row.user_id]) rolesByUser[row.user_id] = [];
+    rolesByUser[row.user_id].push(row.role);
+  }
+
+  return users.map((u: { id: string; username: string; email: string; display_name: string; is_active: boolean }) => ({
+    ...u,
+    roles: rolesByUser[u.id] ?? [],
+  }));
+}
+
 // Create a new user with roles
 export async function createUser(data: {
   username: string;

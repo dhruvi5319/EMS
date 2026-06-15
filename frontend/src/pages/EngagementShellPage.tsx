@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { getEngagement } from '@/lib/engagements.api';
-import type { Engagement, GateDecision, Blocker } from '@/lib/engagements.api';
+import type { Engagement, GateDecision, Blocker, EngagementCounts } from '@/lib/engagements.api';
 import { EngagementHeaderCard } from '@/components/engagements/EngagementHeaderCard';
 import { GateStatusCardRow } from '@/components/engagements/GateStatusCardRow';
 import { BlockerPanel } from '@/components/engagements/BlockerPanel';
@@ -61,6 +61,7 @@ export function EngagementShellPage() {
   const [engagement, setEngagement] = useState<Engagement | null>(null);
   const [gateDecisions, setGateDecisions] = useState<GateDecision[]>([]);
   const [blockers, setBlockers] = useState<Blocker[]>([]);
+  const [counts, setCounts] = useState<EngagementCounts | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
@@ -82,10 +83,11 @@ export function EngagementShellPage() {
     if (!id) return;
     setLoading(true);
     getEngagement(id)
-      .then(({ engagement: eng, gate_decisions, blockers: b }) => {
+      .then(({ engagement: eng, gate_decisions, blockers: b, counts: c }) => {
         setEngagement(eng);
         setGateDecisions(gate_decisions);
         setBlockers(b);
+        setCounts(c ?? null);
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
@@ -241,7 +243,17 @@ export function EngagementShellPage() {
       {/* Artifact Counts */}
       <div className="mb-6 text-sm text-muted-foreground">
         <p className="text-xs font-medium uppercase tracking-wide mb-1">Artifact Counts</p>
-        <p>Team: — · Objectives: — · Evidence: — · Findings: — · Draft Product: —</p>
+        <p>
+          Team: {counts?.team ?? '—'} · Objectives: {counts?.objectives ?? '—'} · Evidence:{' '}
+          {counts?.evidence ?? '—'} · Findings: {counts?.findings ?? '—'} · Draft Product:{' '}
+          {counts?.draft_status ? counts.draft_status.replace(/_/g, ' ') : 'none'}
+        </p>
+        {counts && (
+          <p className="mt-1">
+            Objectives without evidence: {counts.objectives_without_evidence} · Reference checks:{' '}
+            {counts.reference_check_complete}/{counts.reference_check_total} ({counts.reference_check_pct}%)
+          </p>
+        )}
       </div>
 
       {/* Engagement Shell Tabs */}

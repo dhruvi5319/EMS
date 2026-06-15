@@ -48,12 +48,13 @@ export async function getPlanningRecord(engagementId: string): Promise<{
   const res = await api.get<{
     planning_record: PlanningRecord | null;
     objectives: Objective[];
+    independence_affirmations?: IndependenceAffirmation[];
   }>(`/api/engagements/${engagementId}/planning`);
   if (!res.ok) throw new Error(res.error);
   return {
     planning_record: res.data.planning_record,
     objectives: res.data.objectives,
-    independence_affirmations: [],
+    independence_affirmations: res.data.independence_affirmations ?? [],
   };
 }
 
@@ -119,19 +120,14 @@ export async function setIndependenceStatus(
   engagementId: string,
   affirmations: Array<{ user_id: string; status: 'affirmed' | 'pending' | 'exception_noted' }>
 ): Promise<{ affirmations: IndependenceAffirmation[] }> {
-  // Independence is tracked per objective via objectives.independence_confirmed field.
-  // For now, store affirmations locally — the prerequisites check uses the
-  // independence_affirmations table which may not exist yet.
-  // This API wrapper is a no-op stub that returns the affirmations passed in.
-  const mapped: IndependenceAffirmation[] = affirmations.map((a) => ({
-    id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36),
-    engagement_id: engagementId,
-    user_id: a.user_id,
-    status: a.status,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  }));
-  return { affirmations: mapped };
+  // Persists to the independence_affirmations table, which Gate P2's
+  // independence_status_complete prerequisite reads.
+  const res = await api.put<{ independence_affirmations: IndependenceAffirmation[] }>(
+    `/api/engagements/${engagementId}/planning/independence`,
+    { affirmations }
+  );
+  if (!res.ok) throw Object.assign(new Error(res.error), { status: res.status });
+  return { affirmations: res.data.independence_affirmations };
 }
 
 export async function requestRevision(
