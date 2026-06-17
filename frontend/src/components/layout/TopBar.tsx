@@ -1,5 +1,6 @@
 import { useAuthContext } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { GlobalSearchBar } from '@/components/search/GlobalSearchBar';
 
 export function TopBar() {
   const { user, logout } = useAuthContext();
@@ -30,18 +31,8 @@ export function TopBar() {
         <span className="font-mono text-[var(--c-accent-600)] tracking-tight">EMS</span>
       </div>
 
-      {/* Search — center slot */}
-      <div className="flex-1 mx-6">
-        <div className="max-w-md mx-auto" id="global-search-container">
-          <input
-            type="text"
-            placeholder="Search engagements, requests..."
-            disabled
-            className="w-full h-9 rounded-[var(--r-md)] border border-[var(--c-border)] px-3 text-[13px] text-[var(--c-text-3)] bg-[var(--c-sunken)] cursor-not-allowed font-sans"
-            aria-label="Global search (coming soon)"
-          />
-        </div>
-      </div>
+      {/* Global search */}
+      <GlobalSearchBar />
 
       {/* User menu */}
       <div className="flex items-center gap-3 shrink-0">
