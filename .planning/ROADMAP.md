@@ -49,12 +49,12 @@ Plans:
 **Plans**: 7 plans (includes 1 gap closure plan)
 
 Plans:
-- [ ] 02-01-PLAN.md — shadcn/ui initialization, CSS variable token config, Phase 1 component token migration
-- [ ] 02-02-PLAN.md — Role-filtered navigation sidebar, RoleFilteredNav (6×8 matrix), ReviewQueueBadge, ForbiddenPage, RoleGuard route wrapper
-- [ ] 02-03-PLAN.md — Backend APIs: search (GET /api/search), user management (GET/POST/PUT /api/users), audit trail (GET /api/engagements/:id/audit)
-- [ ] 02-04-PLAN.md — Global search UI: shadcn Command overlay, debounced hook, ⌘K shortcut, keyboard navigation, Playwright E2E
-- [ ] 02-05-PLAN.md — User management page: Admin-only UserTable, CreateUserDialog, EditUserRolesDialog, DeactivateUserConfirm, Playwright E2E
-- [ ] 02-06-PLAN.md — Audit trail view: AuditEventCard, ActionCodeBadge, AuditTrailFilters, AuditTimeline, pagination, Playwright E2E
+- [x] 02-01-PLAN.md — shadcn/ui initialization, CSS variable token config, Phase 1 component token migration
+- [x] 02-02-PLAN.md — Role-filtered navigation sidebar, RoleFilteredNav (6×8 matrix), ReviewQueueBadge, ForbiddenPage, RoleGuard route wrapper
+- [x] 02-03-PLAN.md — Backend APIs: search (GET /api/search), user management (GET/POST/PUT /api/users), audit trail (GET /api/engagements/:id/audit)
+- [x] 02-04-PLAN.md — Global search UI: shadcn Command overlay, debounced hook, ⌘K shortcut, keyboard navigation, Playwright E2E
+- [x] 02-05-PLAN.md — User management page: Admin-only UserTable, CreateUserDialog, EditUserRolesDialog, DeactivateUserConfirm, Playwright E2E
+- [x] 02-06-PLAN.md — Audit trail view: AuditEventCard, ActionCodeBadge, AuditTrailFilters, AuditTimeline, pagination, Playwright E2E
 - [ ] 02-GAP-01-PLAN.md — Gap closure: mount GlobalSearchBar in TopBar.tsx (UAT Tests 4 & 5 — search bar unclickable, ⌘K/Ctrl+K not working)
 
 ### Phase 3: Intake and Gate A1
