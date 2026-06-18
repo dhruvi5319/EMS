@@ -2,15 +2,15 @@
 pivota_spec_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: active
-stopped_at: Completed 03-GAP-01-PLAN.md (Phase 3 gaps closed, 18/18 verified)
-last_updated: "2026-06-18T15:30:00.000Z"
-last_activity: "2026-06-18 — Phase 3 gap closure complete: IntakeFileUpload wired, approval reload fixed, GateA1DecidedCard real data + navigation — 18/18 must-haves verified"
+status: verifying
+stopped_at: "Completed 03-GAP-02-PLAN.md (Phase 3 all gaps closed: 3/3 RETEST-UAT tests pass)"
+last_updated: "2026-06-18T16:12:07.087Z"
+last_activity: "2026-06-06 — Phase 5 complete: Evidence registry (F8), objective-evidence linking + gap view (F9), findings + sufficiency + Gate P3 approval (F10) — human verified"
 progress:
   total_phases: 6
   completed_phases: 6
-  total_plans: 39
-  completed_plans: 39
+  total_plans: 40
+  completed_plans: 40
   percent: 81
 ---
 
@@ -95,6 +95,7 @@ Progress: [████████░░] 81%
 | Phase 06-draft-reference-check-gate-p4-and-dashboard P07 | 10min | 2 tasks | 14 files |
 | Phase 02-application-shell PGAP-01 | 1min | 1 tasks | 1 files |
 | Phase 03-intake-and-gate-a1 PGAP-01 | 5min | 2 tasks | 6 files |
+| Phase 03-intake-and-gate-a1 PGAP-02 | 5min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -192,6 +193,7 @@ Recent decisions affecting current work:
 - [Phase 02-application-shell]: No extra wrapper div: GlobalSearchBar owns its flex-1 mx-6 max-w-[640px] container; TopBar header flex positions it correctly
 - [Phase 03-intake-and-gate-a1]: GET /api/requests/:id/gate/decision uses dual-path query: approved queries gate_decisions+users join, declined queries audit_events+users join (schema constraint: gate_decisions.engagement_id NOT NULL)
 - [Phase 03-intake-and-gate-a1]: Approval banner uses React approvalResult state replacing window.location.reload() — in-place update preserves page context
+- [Phase 03-intake-and-gate-a1]: u.display_name (not u.full_name) is the correct column per migration 001_auth_tables.ts — fix applied during debug session and verified in GAP-02
 
 ### Pending Todos
 
@@ -203,6 +205,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-18T15:13:44.887Z
-Stopped at: Completed 03-GAP-01-PLAN.md
+Last session: 2026-06-18T16:12:07.085Z
+Stopped at: Completed 03-GAP-02-PLAN.md (Phase 3 all gaps closed: 3/3 RETEST-UAT tests pass)
 Resume file: None
