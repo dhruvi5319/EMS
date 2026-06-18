@@ -81,7 +81,7 @@ Plans:
 - [ ] 03-GAP-02-PLAN.md — Gap closure: fix u.full_name → u.display_name in gate decision JOIN (UAT Test 3 retest — approver name blank, rationale '—')
 
 ### Phase 4: Engagement Setup and Gate P2
-**Status**: In Progress
+**Status**: executing
 **Completed**: 2026-06-05
 **Goal**: An Engagement Manager can fully set up an accepted engagement — metadata, team, milestones, and planning record — and a QA Reviewer can approve the planning baseline, locking it at Gate P2
 **Depends on**: Phase 3
