@@ -16,7 +16,7 @@ The EMS delivers a complete, governed engagement lifecycle in six phases that mi
 ## Phase Details
 
 ### Phase 1: Foundation
-**Status**: executing
+**Status**: In Progress
 **Goal**: The project runs locally, the database schema exists, all core data objects are seeded, and the API boots with authentication working
 **Depends on**: Nothing (first phase)
 **Requirements**: F0 (partial — auth/session/user infrastructure), F1
