@@ -1,9 +1,9 @@
 ---
-status: complete
+status: diagnosed
 phase: 04-engagement-setup-and-gate-p2
 source: [04-01-SUMMARY.md, 04-02-SUMMARY.md, 04-03-SUMMARY.md, 04-04-SUMMARY.md, 04-05-SUMMARY.md, 04-06-SUMMARY.md, 04-07-SUMMARY.md]
 started: 2026-06-06T00:00:00.000Z
-updated: 2026-06-18T17:00:00.000Z
+updated: 2026-06-18T17:30:00.000Z
 ---
 
 ## Current Test
@@ -89,27 +89,48 @@ skipped: 5
   reason: "User reported: A1 card has no color border — approved A1 gate shows no emerald left border"
   severity: major
   test: 2
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "DB gate_decisions.status stores 'passed' for approval; backend toGateDecisionRecord() passes it verbatim as 'decision: passed'; GateStatusCard color map only checks for 'approved'/'approve' — 'passed' falls through to slate (no color)"
+  artifacts:
+    - path: "backend/src/services/engagements.service.ts"
+      issue: "toGateDecisionRecord() maps row.status directly to decision field without translating 'passed' → 'approved'"
+    - path: "frontend/src/components/engagements/GateStatusCard.tsx"
+      issue: "Color map checks d === 'approved' || d === 'approve' only; 'passed' not handled"
+  missing:
+    - "Translate DB status vocabulary in toGateDecisionRecord(): 'passed' → 'approved', 'failed' → 'declined'"
+  debug_session: ".planning/debug/gate-card-no-color.md"
 
 - truth: "EM can click + Add Member, search by name, pick a role, and add them; adding a duplicate shows an error"
   status: failed
   reason: "User reported: Can search users but cannot add team members — selection is not working, and the search results dropdown is small and looks bad UI wise"
   severity: major
   test: 5
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Two bugs in AddMemberForm.tsx: (1) Manual JSX CommandEmpty conditionals conflict with cmdk v1 internal visibility management + controlled CommandInput value triggers selectFirstItem() on every keystroke, preventing onSelect from committing; (2) PopoverContent hardcoded w-[300px] mismatches full-width trigger button"
+  artifacts:
+    - path: "frontend/src/components/engagements/AddMemberForm.tsx"
+      issue: "Line 119: w-[300px] fixed width on PopoverContent; Lines 120-132: shouldFilter=false + controlled CommandInput + manual CommandEmpty JSX fight with cmdk v1 internals"
+  missing:
+    - "Remove value={query} from CommandInput (use onValueChange only) to stop cmdk auto-selecting first item"
+    - "Replace manual CommandEmpty JSX conditionals with single always-mounted <CommandEmpty> and move hint text outside Command"
+    - "Change PopoverContent width to w-[var(--radix-popover-trigger-width)] or use w-full to match trigger"
+  debug_session: ".planning/debug/add-member-selection-broken.md"
 
 - truth: "Setting valid milestone dates saves and shows computed status chips; out-of-order dates show validation error"
   status: failed
   reason: "User reported: Screen went blank after clicking save/submit on a milestone"
   severity: blocker
   test: 7
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "TeamPanel.handleSaveMilestones has no try/catch — when upsertMilestones() throws on any API error, the unhandled exception propagates through MilestoneTable.handleSave (try/finally only, no catch). With no ErrorBoundary anywhere in the app, React's default behavior is to unmount the entire tree → blank screen"
+  artifacts:
+    - path: "frontend/src/components/engagements/TeamPanel.tsx"
+      issue: "Lines 109-115: handleSaveMilestones missing try/catch — exceptions propagate uncaught"
+    - path: "frontend/src/components/engagements/MilestoneTable.tsx"
+      issue: "Lines 84-98: handleSave uses try/finally only, no catch — unhandled rejection escapes"
+    - path: "frontend/src/App.tsx"
+      issue: "No ErrorBoundary component — uncaught errors blank entire screen"
+  missing:
+    - "Add try/catch in TeamPanel.handleSaveMilestones showing a destructive toast on error"
+    - "Add catch in MilestoneTable.handleSave to surface errors to UI"
+    - "Add ErrorBoundary wrapping tab panels in EngagementShellPage"
+    - "Fix React Fragment missing key prop in MilestoneTable list render"
+    - "Add 'overdue' to DB migrations/002_core_tables.ts milestone_status CHECK constraint"
+  debug_session: ".planning/debug/milestone-save-blank-screen.md"
