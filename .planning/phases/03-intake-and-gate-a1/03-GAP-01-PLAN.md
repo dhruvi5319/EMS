@@ -6,8 +6,10 @@ wave: 1
 depends_on: []
 files_modified:
   - frontend/src/pages/requests/RequestDetailPage.tsx
+  - frontend/src/pages/requests/RequestFormPage.tsx
   - frontend/src/components/requests/GateA1DecidedCard.tsx
-  - frontend/src/App.tsx
+  - frontend/e2e/request-detail.spec.ts
+  - frontend/e2e/gate-a1.spec.ts
   - backend/src/routes/gate.ts
 autonomous: true
 gap_closure: true
@@ -145,13 +147,43 @@ Add this route BEFORE the existing `POST /:id/gate/a1` to ensure correct Express
   <name>Task 2: Fix RequestDetailPage — wire IntakeFileUpload, fix approval reload, fix decided card data + audit trail links</name>
   <files>
     frontend/src/pages/requests/RequestDetailPage.tsx
+    frontend/src/pages/requests/RequestFormPage.tsx
     frontend/src/components/requests/GateA1DecidedCard.tsx
-    frontend/src/App.tsx
+    frontend/e2e/request-detail.spec.ts
+    frontend/e2e/gate-a1.spec.ts
   </files>
   <action>
-Three fixes in `RequestDetailPage.tsx`, one in `GateA1DecidedCard.tsx`, one in `App.tsx`:
+Four fixes in `RequestDetailPage.tsx`, one in `RequestFormPage.tsx`, one in `GateA1DecidedCard.tsx`. No changes to `App.tsx` are needed — all navigation uses the already-registered `/engagements/:id/audit` route which is wired in App.tsx from Plan 03-05.
 
-### Fix A — Wire IntakeFileUpload (Gap 1 / Test 3)
+### Fix A — Wire IntakeFileUpload in RequestFormPage (Gap 1 / VERIFICATION.md lines 334-336)
+
+In `RequestFormPage.tsx`:
+
+1. Add import at top of file: `import { IntakeFileUpload } from '@/components/requests/IntakeFileUpload';`
+
+2. Replace the placeholder div at lines 334-336:
+   ```tsx
+   <div className="mt-4 mb-6 p-4 border border-dashed border-border rounded-lg text-center text-sm text-muted-foreground">
+     File upload component (Plan 03-04)
+   </div>
+   ```
+   With:
+   ```tsx
+   {isEdit && id ? (
+     <IntakeFileUpload
+       requestId={id}
+       existingFile={null}
+       onUploadComplete={() => {}}
+     />
+   ) : (
+     <div className="mt-4 mb-6 p-4 border border-dashed border-border rounded-lg text-center text-sm text-muted-foreground">
+       Save as draft first to attach intake document.
+     </div>
+   )}
+   ```
+   For "new request" mode (`!isEdit`), the placeholder note is appropriate — the user must save as draft to get an ID before uploading. For edit mode (`isEdit && id`), render `IntakeFileUpload` with the request ID. The `existingFile` prop can remain `null` here; the component itself handles fetching existing upload state via its own state.
+
+### Fix A2 — Wire IntakeFileUpload in RequestDetailPage (Gap 1 / Test 3)
 
 In `RequestDetailPage.tsx`:
 
@@ -233,16 +265,16 @@ In `RequestDetailPage.tsx`:
 
 3. Replace the placeholder `GateA1DecidedCard` call (lines 155–166) with:
    ```tsx
-   <GateA1DecidedCard
-     decision={gateDecision ?? {
-       id: 'loading',
-       decision: request.status as 'approved' | 'declined',
-       risk_level: null,
-       rationale: '—',
-       decided_at: request.updated_at,
-     }}
-     engagementId={gateDecision?.engagement_id ?? undefined}
-   />
+    <GateA1DecidedCard
+      decision={gateDecision ?? {
+        id: 'loading',
+        decision: (request.status === 'accepted' ? 'approved' : 'declined') as 'approved' | 'declined',
+        risk_level: null,
+        rationale: '—',
+        decided_at: request.updated_at,
+      }}
+      engagementId={gateDecision?.engagement_id ?? undefined}
+    />
    ```
 
 ### Fix D — Fix "View Gate History" button in GateA1DecidedCard (Gap 3 / Test 10 — sub-bug b)
@@ -290,20 +322,40 @@ Replace the "View Audit Trail →" anchor (line 187–190):
 For requests without an engagement (draft, submitted, or declined) the link is omitted — there is no engagement audit trail to navigate to. This is correct behavior.
 
 Note: No changes to `App.tsx` are needed since we're navigating to the already-registered `/engagements/:id/audit` route.
+
+### Fix F — Extend Playwright specs for regression coverage
+
+In `frontend/e2e/request-detail.spec.ts`: add tests covering:
+1. **IntakeFileUpload visible on draft detail page** — mock the request detail API to return a draft request, navigate to `/requests/:id`, assert the drag-drop zone element is visible (e.g. `page.getByText('Drag & drop').isVisible()` or `page.locator('[data-testid="intake-upload"]').isVisible()`).
+2. **Approval banner with job code** — mock POST `/api/requests/:id/gate/a1` to return `{ decision: 'approved', engagement: { id: 'eng-1', job_code: 'ENG-2026-00001' } }`, trigger the GateA1Panel confirm action, assert the green banner contains `ENG-2026-00001` and the "View Engagement Shell →" link is visible pointing to `/engagements/eng-1`.
+3. **No page reload on approval** — after mock approval, assert `page.url()` still contains `/requests/:id` (no navigation away).
+
+In `frontend/e2e/gate-a1.spec.ts`: add tests covering:
+1. **Decided card with real approver name** — mock GET `/api/requests/:id/gate/decision` to return `{ gate_decision: { id: 'gd-1', decision: 'approved', risk_level: 'medium', rationale: 'Valid rationale', decided_by_name: 'Jane Smith', decided_at: '2026-01-01T00:00:00Z', engagement_id: 'eng-1' } }`, render a detail page with `status='accepted'`, assert the card shows "Jane Smith" (not a placeholder).
+2. **View Gate History navigation** — assert "View Gate History →" link href is `/engagements/eng-1/audit` (not `#audit`).
+3. **Decided card for declined** — mock no engagement, assert "View Gate History" link is absent or disabled, assert no broken `#audit` anchor.
+
+Use the existing Playwright helper patterns already in `gate-a1.spec.ts` (mock service worker or `page.route()` intercepts). Follow conventions from existing spec files in `frontend/e2e/`.
   </action>
   <verify>
     ```bash
     cd /home/daytona/project && npx tsc --project frontend/tsconfig.json --noEmit 2>&1 | grep -v "^$" | tail -20 && echo "FRONTEND TYPECHECK OK"
+    npx playwright test frontend/e2e/request-detail.spec.ts frontend/e2e/gate-a1.spec.ts --reporter=list 2>&1 | tail -30 && echo "PLAYWRIGHT PASSED"
     ```
   </verify>
   <done>
     - Frontend TypeScript compiles with no errors.
+    - `grep -n "IntakeFileUpload" frontend/src/pages/requests/RequestFormPage.tsx` shows import and usage (isEdit && id conditional).
     - `grep -n "IntakeFileUpload" frontend/src/pages/requests/RequestDetailPage.tsx` shows import and usage.
+    - `grep -n "File upload component" frontend/src/pages/requests/RequestFormPage.tsx` returns nothing (placeholder removed).
     - `grep -n "window.location.reload" frontend/src/pages/requests/RequestDetailPage.tsx` returns nothing.
     - `grep -n "approvalResult" frontend/src/pages/requests/RequestDetailPage.tsx` shows approval banner state.
     - `grep -n "gate/decision" frontend/src/pages/requests/RequestDetailPage.tsx` shows the fetch useEffect.
     - `grep -n "href=.*#audit" frontend/src/components/requests/GateA1DecidedCard.tsx` returns nothing.
     - `grep -n "engagementId" frontend/src/components/requests/GateA1DecidedCard.tsx` shows prop usage.
+    - `grep -n "accepted.*approved\|status === 'accepted'" frontend/src/pages/requests/RequestDetailPage.tsx` shows corrected status mapping in fallback object.
+    - Playwright test files `e2e/request-detail.spec.ts` and `e2e/gate-a1.spec.ts` exist and all tests pass (0 failing, 0 skipped).
+    - Playwright tests cover: IntakeFileUpload visible on edit mode detail page, approval banner with job code, decided card with real approver name (not placeholder), View Gate History navigation to `/engagements/:id/audit`.
   </done>
 </task>
 
@@ -315,9 +367,13 @@ After both tasks complete:
 1. Backend typecheck passes: `npx tsc --project backend/tsconfig.json --noEmit`
 2. Frontend typecheck passes: `npx tsc --project frontend/tsconfig.json --noEmit`
 3. New GET endpoint exists: `grep -n "gate/decision" backend/src/routes/gate.ts`
-4. IntakeFileUpload wired: `grep -n "IntakeFileUpload" frontend/src/pages/requests/RequestDetailPage.tsx`
-5. No reload: `grep -rn "window.location.reload" frontend/src/pages/requests/ | wc -l` returns 0
-6. No broken anchor: `grep -rn 'href="#audit"' frontend/src/components/requests/ | wc -l` returns 0
+4. IntakeFileUpload wired in form page: `grep -n "IntakeFileUpload" frontend/src/pages/requests/RequestFormPage.tsx`
+5. IntakeFileUpload wired in detail page: `grep -n "IntakeFileUpload" frontend/src/pages/requests/RequestDetailPage.tsx`
+6. Placeholder removed: `grep -n "File upload component" frontend/src/pages/requests/RequestFormPage.tsx` returns nothing
+7. No reload: `grep -rn "window.location.reload" frontend/src/pages/requests/ | wc -l` returns 0
+8. No broken anchor: `grep -rn 'href="#audit"' frontend/src/components/requests/ | wc -l` returns 0
+9. Status mapping corrected: `grep -n "accepted.*approved\|status === 'accepted'" frontend/src/pages/requests/RequestDetailPage.tsx` shows the ternary mapping
+10. Playwright passes: `npx playwright test frontend/e2e/request-detail.spec.ts frontend/e2e/gate-a1.spec.ts --reporter=list`
 </verification>
 
 <success_criteria>
