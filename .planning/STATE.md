@@ -2,10 +2,10 @@
 pivota_spec_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: "Completed 03-GAP-02-PLAN.md (Phase 3 all gaps closed: 3/3 RETEST-UAT tests pass)"
-last_updated: "2026-06-18T16:12:07.087Z"
-last_activity: "2026-06-06 — Phase 5 complete: Evidence registry (F8), objective-evidence linking + gap view (F9), findings + sufficiency + Gate P3 approval (F10) — human verified"
+status: active
+stopped_at: "Completed 03-GAP-02 (Phase 3 fully closed: display_name fix confirmed, RETEST-UAT 3/3, VERIFICATION.md updated)"
+last_updated: "2026-06-18T16:20:00.000Z"
+last_activity: "2026-06-18 — Phase 3 GAP-02 closed: u.full_name → u.display_name in gate decision JOIN; RETEST-UAT 3/3 complete; VERIFICATION.md re-verified passed 18/18"
 progress:
   total_phases: 6
   completed_phases: 6

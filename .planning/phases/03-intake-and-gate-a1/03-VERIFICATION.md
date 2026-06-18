@@ -18,6 +18,26 @@ re_verification_meta:
     - "View Audit Trail link only shown when gateDecision?.engagement_id exists — omitted for draft/submitted/declined requests"
   gaps_remaining: []
   regressions: []
+re_verification_meta_gap_02:
+  source_gap: GAP-02
+  plan: 03-GAP-02-PLAN.md
+  summary: 03-GAP-02-SUMMARY.md
+  verified: 2026-06-18T16:15:00Z
+  previous_status: passed
+  previous_score: 18/18
+  uat_status: complete
+  uat_score: 3/3
+  gap_closed:
+    - "Must-have #18 (GateA1DecidedCard shows real approver name): gate.ts GET /:id/gate/decision now uses u.display_name (not u.full_name) in both SELECT clauses — approved path (line 28) and declined path (line 57). Column u.full_name did not exist in users table (migration 001 defines display_name at line 10), causing a silent PostgreSQL error swallowed by frontend catch(). Fix committed as 539fb79."
+  uat_test_3_fix: "RETEST-UAT Test 3 (Gate A1 Decided Card) — changed from 'issue' to 'pass' after display_name fix; 0 remaining issues"
+  regressions: []
+  commits:
+    - hash: 539fb79
+      message: "fix(gate): use display_name instead of full_name in gate decision JOIN (applied during debug)"
+    - hash: 7fa72f1
+      message: "docs(phase-3): mark RETEST-UAT gap-02 resolved — display_name fix confirmed"
+    - hash: a4b527d
+      message: "docs(03-GAP-02): complete gap-02 plan — display_name fix verified, RETEST-UAT complete"
 
 human_verification:
   - test: "Full end-to-end: create request → upload file → submit → approve → check engagement shell"
@@ -36,20 +56,23 @@ human_verification:
     expected: "Drag-and-drop zone visible (canEdit path); onUploadComplete updates fileAttached state so download link reflects upload without reload"
     why_human: "Requires running browser + backend together; onUploadComplete callback state update only verifiable at runtime"
   - test: "Decided card with real approver name: approve a request, reload the detail page"
-    expected: "GateA1DecidedCard shows real approver full_name from gate/decision API; risk level badge visible; View Gate History → href is /engagements/:id/audit"
+    expected: "GateA1DecidedCard shows real approver display_name from gate/decision API (u.display_name column, not u.full_name); risk level badge visible; View Gate History → href is /engagements/:id/audit"
     why_human: "Requires full running stack with DB; gate/decision endpoint returns joined user data"
+    status: "UAT passed (GAP-02) — display_name fix confirmed via RETEST-UAT Test 3"
 ---
 
 # Phase 3: Intake and Gate A1 — Verification Report
 
 **Phase Goal:** An Engagement Acceptance Lead can create and submit a request, and either approve it (automatically creating an engagement shell with audit trail) or decline it with recorded rationale  
-**Verified:** 2026-06-18T16:00:00Z  
+**Verified:** 2026-06-18T16:15:00Z (updated after GAP-02 closure)  
 **Status:** ✅ passed  
-**Re-verification:** Yes — after gap closure (03-GAP-01)
+**Re-verification:** Yes — after gap closure (03-GAP-01); confirmed after UAT gap closure (03-GAP-02)
 
 ---
 
 ## Re-verification Summary
+
+### After 03-GAP-01 (initial gap closure)
 
 | Item | Previous | Now | Change |
 |------|----------|-----|--------|
@@ -63,6 +86,18 @@ human_verification:
 | New: GateA1DecidedCard engagementId prop | N/A | ✓ VERIFIED | Added |
 | New: View Audit Trail conditional on engagement_id | N/A | ✓ VERIFIED | Added |
 | Regressions in previously-passed items | — | None | ✓ Stable |
+
+### After 03-GAP-02 (UAT gap closure — display_name fix)
+
+| Item | Before GAP-02 | After GAP-02 | Change |
+|------|--------------|--------------|--------|
+| Overall status | passed | **passed** | ✅ Unchanged |
+| Score | 18/18 | **18/18** | No change |
+| Must-have #18: GateA1DecidedCard real approver name (display_name) | ✓ VERIFIED (code-level) | ✓ VERIFIED + UAT pass | UAT confirmed |
+| RETEST-UAT Test 3 (decided card) | issue (UAT fail) | **pass** | ✅ Fixed |
+| RETEST-UAT overall | 2/3 | **3/3** | +1 closed |
+| Root cause: `u.full_name` in gate.ts GET handler | ✗ WRONG COLUMN | `u.display_name` (lines 28 + 57) | ✅ Fixed (commit 539fb79) |
+| Regressions | — | None | ✓ Stable |
 
 ---
 
@@ -89,7 +124,7 @@ human_verification:
 | 15 | Request List page: status tabs, table, empty state, + New Request CTA | ✓ VERIFIED | All present in RequestListPage.tsx |
 | 16 | Gate A1 panel renders for AL on submitted requests; AlertDialog with "Keep Request Pending" | ✓ VERIFIED | GateA1Panel with RadioGroup, rationale, disabled buttons, AlertDialog |
 | 17 | IntakeFileUpload wired in RequestFormPage (edit mode) AND RequestDetailPage (canEdit mode) | ✓ VERIFIED | **Gap closed:** Line 18 import + line 336 conditional render in RequestFormPage; line 9 import + line 138 conditional render in RequestDetailPage |
-| 18 | After decision, GateA1DecidedCard shows accurate data (status chip correctly maps 'accepted' → approved display; real approver/rationale/date from API; View Gate History to correct URL) | ✓ VERIFIED | **Gap closed:** Ternary mapping `request.status === 'accepted' ? 'approved' : 'declined'` on line 225; useEffect fetches `/api/requests/:id/gate/decision`; engagementId prop wires View Gate History to `/engagements/:id/audit` |
+| 18 | After decision, GateA1DecidedCard shows accurate data (status chip correctly maps 'accepted' → approved display; real approver/rationale/date from API; View Gate History to correct URL) | ✓ VERIFIED | **GAP-01:** Ternary mapping `request.status === 'accepted' ? 'approved' : 'declined'` on line 225; useEffect fetches `/api/requests/:id/gate/decision`; engagementId prop wires View Gate History to `/engagements/:id/audit`. **GAP-02:** `u.display_name as decided_by_name` used in both SELECT clauses of gate.ts GET handler (lines 28 + 57) — `u.full_name` removed; matches migration 001 schema. UAT Test 3: pass (commit 539fb79) |
 
 **Score:** 18/18 truths verified
 
@@ -203,17 +238,20 @@ human_verification:
 **Expected:** Drag-and-drop zone visible (canEdit condition); after upload onUploadComplete fires and the download link reflects the new file without full page reload  
 **Why human:** Requires running browser + backend; onUploadComplete state update only verifiable at runtime
 
-### 6. Decided Card Real Approver Data
+### 6. Decided Card Real Approver Data ✅ UAT PASSED (GAP-02)
 
 **Test:** Approve a request via the UI, then reload the detail page  
-**Expected:** GateA1DecidedCard shows real approver full_name (from joined users table), correct rationale, formatted date; View Gate History → href is `/engagements/:id/audit`  
-**Why human:** Requires full running stack with DB; gate/decision endpoint joined user data only observable at runtime
+**Expected:** GateA1DecidedCard shows real approver display_name (from joined users table via `u.display_name as decided_by_name`), correct rationale, formatted date; View Gate History → href is `/engagements/:id/audit`  
+**Result (RETEST-UAT Test 3):** pass — `u.full_name` (non-existent column) replaced with `u.display_name` in both SELECT clauses of GET /api/requests/:id/gate/decision (gate.ts lines 28 and 57). PostgreSQL column error was silently swallowed by frontend catch(); fix corrects the mismatch. Committed 539fb79.  
+**Why originally human:** Requires full running stack with DB; gate/decision endpoint joined user data only observable at runtime
 
 ---
 
 ## Gaps Summary
 
-**No gaps.** All 18 must-haves are verified. All 8 gap-closure fixes from 03-GAP-01 are implemented and verified in the codebase:
+**No gaps.** All 18 must-haves are verified. All fixes from 03-GAP-01 and 03-GAP-02 are implemented and verified in the codebase. RETEST-UAT: 3/3 tests passing.
+
+### 03-GAP-01 Fixes
 
 | Fix | Description | Verified |
 |-----|-------------|---------|
@@ -226,10 +264,17 @@ human_verification:
 | Task 1 | GET /api/requests/:id/gate/decision: dual-path approved (gate_decisions+users) / declined (audit_events+users) | ✓ |
 | Fix F | Playwright tests updated: audit trail conditional test; 2 new request-detail tests; 3 new gate-a1 decided card tests | ✓ |
 
-The phase goal is fully achieved: an Engagement Acceptance Lead can create and submit a request, and either approve it (automatically creating an engagement shell, with in-place success banner showing job code) or decline it (with rationale recorded in audit events). All post-decision display paths show real data from the database.
+### 03-GAP-02 Fix (UAT-discovered — display_name column)
+
+| Fix | Description | Verified |
+|-----|-------------|---------|
+| Fix G | `u.display_name as decided_by_name` in both SELECT clauses of GET /api/requests/:id/gate/decision — approved path (gate.ts line 28) and declined path (line 57). Root cause: `u.full_name` column does not exist in users table (migration 001 defines `display_name`); PostgreSQL error was silently swallowed by frontend catch(), causing blank approver name and rationale in GateA1DecidedCard. Committed 539fb79. | ✓ UAT pass |
+
+The phase goal is fully achieved: an Engagement Acceptance Lead can create and submit a request, and either approve it (automatically creating an engagement shell, with in-place success banner showing job code) or decline it (with rationale recorded in audit events). All post-decision display paths show real data from the database. RETEST-UAT confirms 3/3 tests passing including the decided card with real approver name.
 
 ---
 
-*Verified: 2026-06-18T16:00:00Z*  
+*Verified: 2026-06-18T16:00:00Z (initial re-verification after 03-GAP-01)*  
+*Updated: 2026-06-18T16:15:00Z (GAP-02 closure — display_name fix confirmed, RETEST-UAT 3/3)*  
 *Verifier: Claude (pivota_spec-verifier)*  
-*Mode: Re-verification after 03-GAP-01 gap closure*
+*Mode: Re-verification after 03-GAP-01 gap closure; GAP-02 UAT closure confirmed*
