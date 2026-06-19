@@ -250,13 +250,31 @@ export async function updateStatement(
       );
     }
 
-    // Waiver pattern: 'failed' requires discrepancy_notes
-    // (waived is not in DB schema — plan spec was aspirational)
+    // 'failed' requires discrepancy_notes (documenting the discrepancy found by IR)
     if (data.ref_status === 'failed') {
       const notes = data.discrepancy_notes ?? (existing.discrepancy_notes as string | null);
       if (!notes || notes.trim().length === 0) {
         throw Object.assign(
           new Error('Discrepancy notes are required when reference status is Failed.'),
+          { status: 422 }
+        );
+      }
+    }
+
+    // 'waived' is restricted to EM/AD (management decision, not an IR action)
+    // and requires a justification string in discrepancy_notes
+    if (data.ref_status === 'waived') {
+      const canWaive = userRoles.includes('EM') || userRoles.includes('AD');
+      if (!canWaive) {
+        throw Object.assign(
+          new Error('Only Engagement Managers or Administrators can waive a reference check.'),
+          { status: 403 }
+        );
+      }
+      const justification = data.discrepancy_notes ?? (existing.discrepancy_notes as string | null);
+      if (!justification || justification.trim().length === 0) {
+        throw Object.assign(
+          new Error('A justification (discrepancy_notes) is required when waiving a reference check.'),
           { status: 422 }
         );
       }
@@ -349,7 +367,16 @@ export async function deleteStatement(
     throw Object.assign(new Error('Statement not found.'), { status: 404 });
   }
 
-  // Block delete if ref_status is 'passed' (no 'waived' in DB schema)
+  // Block delete if ref_status is 'passed' or 'waived' (waived statements are
+  // management decisions and should be un-waived before deletion)
+  if (existing.ref_status === 'waived') {
+    throw Object.assign(
+      new Error(
+        'Cannot delete — this statement has been waived. Remove the waiver before deleting.'
+      ),
+      { status: 409 }
+    );
+  }
   if (existing.ref_status === 'passed') {
     throw Object.assign(
       new Error(
