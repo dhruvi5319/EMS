@@ -145,7 +145,7 @@ Plans:
   2. An Analyst can add draft statement records and link each to one or more evidence items; an Independent Referencer can mark each statement as Not Started / In Review / Passed / Failed and capture discrepancy notes when Failed, assigning the discrepancy back to the Analyst
   3. Gate P4 is blocked if any reference check is In Review or Failed, or if P3 has not passed; when all checks are Passed or waived and no blockers remain, the Publishing Coordinator can record P4 approval, setting the engagement to Ready for Issuance or Closed with an audit event
   4. Any user can view the portfolio dashboard showing counts by phase and status, filters by owner/risk level/due date/phase/status, a sortable list with engagement ID/title/phase/owner/risk/next milestone/gate status, and can export the list to CSV
-**Plans**: 7 plans
+**Plans**: 9 plans (includes 2 gap closure plans)
 
 Plans:
 - [ ] 06-01-PLAN.md — Draft product backend API (F11): CRUD, file upload/replace, append-only review comments
@@ -155,6 +155,8 @@ Plans:
 - [ ] 06-05-PLAN.md — Statements / Indexing UI (F12 AN/EM view): StatementsPage, 5-segment progress bar, statement table, AddStatementForm, WaiveDialog, Playwright E2E
 - [ ] 06-06-PLAN.md — Statement Detail UI (F12 IR + AN views): IR decision panel, discrepancy fields, AN correction view, DiscrepancyPanel, AnalystCorrectionNotice, Playwright E2E
 - [ ] 06-07-PLAN.md — Gate P4 UI (F13) + Portfolio Dashboard UI (F14): prerequisites checklist, P4 decision panel, confirm dialog; stat cards, sortable register table, CSV export, Playwright E2E
+- [ ] 06-GAP-01-PLAN.md — Gap closure: fix POST /draft/file response shape + useDraftProduct uploadFile state reset (UAT Test 3); fix AddStatementForm CommandItem cmdk focus-loss race (UAT Test 5)
+- [ ] 06-GAP-02-PLAN.md — Gap closure: add Gate P4 tab to EngagementShellPage (UAT Test 10); fix canExport allowlist in PortfolioDashboardPage (UAT Test 13)
 
 ## Progress
 
