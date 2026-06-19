@@ -173,6 +173,7 @@ export function AddStatementForm({
                           key={item.id}
                           value={item.id}
                           onSelect={() => handleToggleEvidence(item.id)}
+                          onMouseDown={(e) => e.preventDefault()}
                         >
                           <Check
                             size={14}

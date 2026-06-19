@@ -324,6 +324,57 @@ test.describe('Statements Page', () => {
     await expect(dialog.getByRole('button', { name: 'Waive Reference Check' })).toBeEnabled();
   });
 
+  test('evidence CommandItem click toggles selection (badge visible after click)', async ({ page }) => {
+    await login(page, AN_USER);
+    const engagementId = await createEngagementInDraftPhase(page);
+
+    await page.route(`**/api/engagements/${engagementId}/statements**`, async (route) => {
+      if (route.request().method() === 'GET') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ statements: [], total: 0 }),
+        });
+      } else {
+        await route.continue();
+      }
+    });
+
+    await page.route(`**/api/engagements/${engagementId}/evidence**`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          evidence: [
+            { id: 'ev-cmdk-1', source: 'Interview Note — cmdk test', evidence_type: 'interview_note' },
+          ],
+          total: 1,
+        }),
+      });
+    });
+
+    await page.goto(`/engagements/${engagementId}/draft/statements`);
+    await page.waitForLoadState('networkidle');
+
+    // Open dialog
+    await page.getByRole('button', { name: /Add Statement/i }).first().click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+
+    // Open evidence picker
+    await dialog.getByText('Select evidence items...').click();
+    await page.waitForSelector('[role="option"]', { timeout: 3000 });
+
+    // Click the CommandItem — onMouseDown fix should prevent focus-loss race
+    await page.getByRole('option', { name: /Interview Note.*cmdk test/i }).click();
+
+    // After selection, evidence badge or selected count should be visible in the dialog
+    // The picker trigger updates to show selected item count or the item appears as a badge
+    await expect(
+      dialog.getByText(/1 selected|Interview Note.*cmdk test/i).or(dialog.getByRole('option', { name: /Interview Note.*cmdk test/i }).locator('[aria-checked="true"]'))
+    ).toBeVisible({ timeout: 3000 });
+  });
+
   test('filter by status narrows table results', async ({ page }) => {
     await login(page, AN_USER);
     const engagementId = await createEngagementInDraftPhase(page);
