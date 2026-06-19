@@ -133,7 +133,7 @@ Plans:
 - [ ] 05-08-PLAN.md — Human verify: complete F8/F9/F10 workflow (evidence, linking, findings, Gate P3 approval)
 - [x] 05-GAP-01-PLAN.md — Gap closure: add GET evidence files endpoint (UAT Test 2 — filenames missing after upload); add P3 409 idempotency guard (UAT Test 13 — re-approval not blocked)
 - [x] 05-GAP-02-PLAN.md — Gap closure: fix EvidenceDetailPage objective link re-fetch (UAT Test 6); add GateP3ReviewPage already-approved banner (UAT Test 13); FindingsListPage p3Approved state + Gate P3 Review link + allPass fix (UAT Tests 12, 15)
-- [ ] 05-GAP-03-PLAN.md — Gap closure: fix GapObjectiveCard "Blocker" → "P3 Blocker" label (UAT Test 4); fix routing conflict so POST /evidence/:id/objectives reaches evidenceRouter not 404 (UAT Test 6)
+- [x] 05-GAP-03-PLAN.md — Gap closure: fix GapObjectiveCard "Blocker" → "P3 Blocker" label (UAT Test 4); fix routing conflict so POST /evidence/:id/objectives reaches evidenceRouter not 404 (UAT Test 6)
 
 ### Phase 6: Draft Product, Reference Check, Gate P4, and Dashboard
 **Status**: passed

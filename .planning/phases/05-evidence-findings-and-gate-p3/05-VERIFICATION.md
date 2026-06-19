@@ -3,7 +3,27 @@ phase: 05-evidence-findings-and-gate-p3
 verified: 2026-06-06T22:12:55Z
 status: passed
 score: 5/5 must-haves verified
-re_verification: null
+re_verification:
+  gap_plan: GAP-03
+  re_verified: 2026-06-19T01:10:00Z
+  previous_status: passed
+  previous_score: 5/5
+  gap_fixes_verified:
+    - truth: "Gap cards in the evidence coverage view display the text 'P3 Blocker' (not 'Blocker')"
+      status: verified
+      evidence: "GapObjectiveCard.tsx line 104: visible text node 'P3 Blocker'; grep -c returns 3 (comment + aria-label + text node); no bare 'Blocker' text node remains"
+    - truth: "POST /api/engagements/:id/evidence/:evidence_id/objectives returns 200 (not 404)"
+      status: verified
+      evidence: "evidence.ts lines 342–363: evidenceRouter.post('/:evidence_id/objectives') handler present; imports linkEvidenceToObjectives from objectivecoverage.service; objectivecoverage.ts contains 0 matches for linkEvidence/unlinkEvidence/getLinkedObjectives"
+    - truth: "After linking an objective via the LinkObjectivePopover, the objective appears immediately in the Linked Objectives section without a page refresh"
+      status: verified
+      evidence: "LinkObjectivePopover.tsx line 50: onLinked(objectiveId) callback fires on success; EvidenceDetailPage.tsx line 101-104: handleObjectiveLinked calls fetchEvidence() which re-fetches /evidence/:id/objectives (line 74-78); objectives list re-renders from state update"
+  gaps_closed:
+    - "Visible 'P3 Blocker' label on GapObjectiveCard"
+    - "POST/DELETE/GET /:evidence_id/objectives routing conflict (404 → 200)"
+    - "Immediate objective list update after LinkObjectivePopover selection"
+  gaps_remaining: []
+  regressions: []
 gaps: []
 human_verification:
   - test: "Run full workflow end-to-end in browser"
@@ -17,7 +37,43 @@ human_verification:
 **Phase Goal:** Analysts can upload and manage evidence, link evidence to objectives, create findings, and a QA Reviewer can mark all objectives sufficient and approve Gate P3
 **Verified:** 2026-06-06T22:12:55Z
 **Status:** ✅ PASSED
-**Re-verification:** No — initial verification
+**Re-verification:** Yes — GAP-03 gap fixes verified 2026-06-19T01:10:00Z
+
+---
+
+## GAP-03 Re-verification (2026-06-19)
+
+**Gap Plan:** 05-GAP-03 — P3 Blocker label + evidence-objective routing conflict fix
+**Re-verified:** 2026-06-19T01:10:00Z
+**Triggered by:** UAT failures on Tests 4 and 6
+
+### GAP-03 Must-Haves
+
+| # | Truth | Status | Evidence |
+|---|-------|--------|---------|
+| G1 | Gap cards display visible text "P3 Blocker" (not "Blocker") | ✓ VERIFIED | `GapObjectiveCard.tsx` line 104: text node `P3 Blocker`; `grep -c 'P3 Blocker'` → 3 (comment + aria-label + text node); no bare `Blocker` node remains |
+| G2 | POST `/api/engagements/:id/evidence/:evidence_id/objectives` returns 200 (not 404) | ✓ VERIFIED | `evidence.ts` lines 342–363: `evidenceRouter.post('/:evidence_id/objectives')` with `linkEvidenceToObjectives` call; `objectivecoverage.ts` → 0 matches for `linkEvidence\|unlinkEvidence\|getLinkedObjectives` |
+| G3 | After linking via LinkObjectivePopover, objective appears immediately without page refresh | ✓ VERIFIED | `LinkObjectivePopover.tsx` line 50: fires `onLinked(objectiveId)`; `EvidenceDetailPage.tsx` line 101–104: `handleObjectiveLinked` calls `fetchEvidence()` which re-fetches `…/objectives` (line 74–78) and updates React state → immediate re-render |
+
+**Score:** 3/3 GAP-03 truths verified
+
+### GAP-03 Artifact Check
+
+| Artifact | Change | Status | Details |
+|----------|--------|--------|---------|
+| `frontend/src/components/evidence/GapObjectiveCard.tsx` | `Blocker` → `P3 Blocker` visible text | ✓ VERIFIED | Line 104: `P3 Blocker` text node confirmed; aria-label also "P3 Blocker" (line 96); old bare "Blocker" absent |
+| `backend/src/routes/evidence.ts` | Added GET/POST/DELETE `/:evidence_id/objectives` handlers + objectivecoverage service imports | ✓ VERIFIED | Lines 319–383: all three handlers present; lines 17–20: `linkEvidenceToObjectives`, `unlinkEvidenceFromObjective`, `getLinkedObjectivesForEvidence` imported and called |
+| `backend/src/routes/objectivecoverage.ts` | Removed link/unlink/getLinked handlers and imports; retained only coverage + sufficiency routes | ✓ VERIFIED | 61 lines total; imports only `getObjectiveCoverage`, `setSufficiency`; two routes: `GET /objectives/coverage` + `PUT /objectives/sufficiency`; 0 matches for moved functions |
+
+### GAP-03 Key Link Check
+
+| From | To | Via | Status | Details |
+|------|----|-----|--------|---------|
+| `LinkObjectivePopover.tsx` | `POST /api/engagements/:id/evidence/:evidence_id/objectives` | `api.post(…/evidence/${evidenceId}/objectives)` line 41–43 | ✓ WIRED | Correct path; `onLinked(objectiveId)` fires on success (line 50) |
+| `evidence.ts` evidenceRouter | `objectivecoverage.service.ts` | `linkEvidenceToObjectives`, `unlinkEvidenceFromObjective`, `getLinkedObjectivesForEvidence` imports | ✓ WIRED | All three imported (lines 17–20) and called in respective handlers (lines 327, 352, 373) |
+| `EvidenceDetailPage.tsx` | `GET …/evidence/:id/objectives` | `handleObjectiveLinked` → `fetchEvidence()` → `api.get(…/objectives)` line 74 | ✓ WIRED | Immediate re-fetch on link; state update causes LinkedObjectivesList re-render |
+
+**GAP-03 result: All 3 truths verified. No regressions detected. Phase 5 status remains PASSED.**
 
 ---
 
@@ -51,8 +107,8 @@ human_verification:
 
 | Artifact | Status | Details |
 |----------|--------|---------|
-| `backend/src/routes/evidence.ts` | ✓ VERIFIED | 262 lines; 8 endpoints (list, create, update, delete, upload file, delete file, download, export CSV); `/export` before `/:evidence_id`; multer memoryStorage; RBAC AN/AD for mutations |
-| `backend/src/routes/objectivecoverage.ts` | ✓ VERIFIED | 145 lines; 4 endpoints (coverage, link, unlink, sufficiency); requireRole('QA','EM','AD') on PUT sufficiency |
+| `backend/src/routes/evidence.ts` | ✓ VERIFIED | 384 lines; 11 endpoints — original 8 + **GET/POST/DELETE `/:evidence_id/objectives` moved here from objectivecoverage.ts in GAP-03 to resolve routing conflict**; `/export` before `/:evidence_id`; multer memoryStorage; RBAC AN/AD for mutations |
+| `backend/src/routes/objectivecoverage.ts` | ✓ VERIFIED | 61 lines; **2 endpoints only** (coverage GET, sufficiency PUT) — link/unlink/getLinked routes removed in GAP-03 (they were intercepted by evidenceRouter); requireRole('QA','EM','AD') on PUT sufficiency |
 | `backend/src/routes/findings.ts` | ✓ VERIFIED | 88 lines; 4 CRUD endpoints; requireRole('AN','AD') on mutations |
 | `backend/src/routes/engagements.ts` (modified) | ✓ VERIFIED | All 3 routers mounted; Gate P3 routes at `/:id/gate/p3/prerequisites` (open) and `/:id/gate/p3` (requireRole('QA','AD')) |
 
@@ -76,7 +132,7 @@ human_verification:
 | `frontend/src/components/evidence/LinkObjectivePopover.tsx` | ✓ VERIFIED | Command+Popover; POST `/objectives` on select; already-linked disabled |
 | `frontend/src/components/evidence/DeleteEvidenceButton.tsx` | ✓ VERIFIED | `aria-disabled` + tooltip when linked; AlertDialog when unlinked; DELETE `/evidence/:id` |
 | `frontend/src/components/evidence/GapViewPanel.tsx` | ✓ VERIFIED | Filters `evidence_count=0`; renders GapObjectiveCard per gap |
-| `frontend/src/components/evidence/GapObjectiveCard.tsx` | ✓ VERIFIED | red-100 bg + 2px dashed border; `role="article"`; Blocker indicator; [Link →] button |
+| `frontend/src/components/evidence/GapObjectiveCard.tsx` | ✓ VERIFIED | red-100 bg + 2px dashed border; `role="article"`; **P3 Blocker** indicator (visible text + aria-label both read "P3 Blocker" — fixed in GAP-03); [Link →] button |
 | `frontend/src/components/evidence/SufficiencyChip.tsx` | ✓ VERIFIED | Shared chip: Evidence Needed (red), In Review (amber), Sufficient (green) with 1px borders |
 
 ### Frontend Components — Findings & Gate P3
@@ -128,7 +184,7 @@ human_verification:
 | `EvidenceListPage` | `/api/engagements/:id/evidence` | `useEvidence` hook | ✓ WIRED | `useEvidence(engagementId, filters)` on line 24 |
 | `EvidenceListPage` | `/api/engagements/:id/objectives/coverage` | `useEvidenceCoverage` hook | ✓ WIRED | `useEvidenceCoverage(engagementId)` on line 25 |
 | `AddEvidencePanel` | `POST /api/engagements/:id/evidence` + `POST /:id/files` | `api.post(evidence)` → `fetch(files)` | ✓ WIRED | Evidence created first (line 86), files uploaded sequentially (lines 108–116) |
-| `LinkObjectivePopover` | `POST /api/engagements/:id/evidence/:id/objectives` | `api.post(...objectives)` | ✓ WIRED | Line 41 |
+| `LinkObjectivePopover` | `POST /api/engagements/:id/evidence/:evidence_id/objectives` | `api.post(...objectives)` | ✓ WIRED | Line 41–43; route now handled by evidenceRouter (GAP-03 fix — previously 404 due to routing conflict) |
 | `SufficiencyStatusSelect` | `PUT /api/engagements/:id/objectives/sufficiency` | `api.put(sufficiency)` | ✓ WIRED | Lines 51–53 |
 | `ApproveP3ConfirmDialog` | `POST /api/engagements/:id/gate/p3` | `api.post(gate/p3)` | ✓ WIRED | Lines 38–39; redirects with `p3Approved: true` |
 | `EngagementShellPage` | Router state `p3Approved` | `useLocation()` + green banner render | ✓ WIRED | Line 69 reads state; lines 119–139 render banner |
@@ -194,5 +250,6 @@ The 25 MB vs 50 MB discrepancy in success criterion 1 is a documentation varianc
 
 ---
 
-_Verified: 2026-06-06T22:12:55Z_
+_Initial verification: 2026-06-06T22:12:55Z_
+_GAP-03 re-verification: 2026-06-19T01:10:00Z_
 _Verifier: Claude (pivota_spec-verifier)_
