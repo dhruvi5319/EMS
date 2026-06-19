@@ -3,14 +3,14 @@ pivota_spec_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: "Completed 04-GAP-04-PLAN.md (Phase 4 GAP-04: AddMemberForm onMouseDown fix for cmdk focus-loss race)"
-last_updated: "2026-06-18T21:31:48.385Z"
+stopped_at: "Completed 05-GAP-01-PLAN.md (Phase 5 GAP-01: Evidence files endpoint + P3 idempotency guard)"
+last_updated: "2026-06-19T00:31:13.197Z"
 last_activity: "2026-06-18 — Phase 4 complete: F4 engagement backend+shell UI, F5 team+milestones, F6 planning record form, F7 Gate P2 review panel — all self-checks passed"
 progress:
   total_phases: 6
-  completed_phases: 6
-  total_plans: 45
-  completed_plans: 45
+  completed_phases: 5
+  total_plans: 47
+  completed_plans: 46
   percent: 81
 ---
 
@@ -101,6 +101,7 @@ Progress: [████████░░] 81%
 | Phase 04-engagement-setup-and-gate-p2 PGAP-03 | 2min | 2 tasks | 4 files |
 | Phase 04-engagement-setup-and-gate-p2 PGAP-05 | 1min | 1 tasks | 1 files |
 | Phase 04-engagement-setup-and-gate-p2 PGAP-04 | 1min | 1 tasks | 1 files |
+| Phase 05-evidence-findings-and-gate-p3 PGAP-01 | 2min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -204,6 +205,7 @@ Recent decisions affecting current work:
 - [Phase 04-engagement-setup-and-gate-p2]: Double-layer milestone error catch: MilestoneTable inline + TeamPanel destructive toast prevents blank screen on API failure
 - [Phase 04-engagement-setup-and-gate-p2]: instanceof Date branch uses .toISOString().split('T')[0] for knex Date columns; String fallback kept for pre-formatted strings
 - [Phase 04-engagement-setup-and-gate-p2]: onMouseDown={(e) => e.preventDefault()} on CommandItem: canonical fix for cmdk v1 + Radix Popover focus-loss race condition
+- [Phase 05-evidence-findings-and-gate-p3]: P3 idempotency uses gate_type='P3'+status='passed' (not gate_name+decision) matching actual DB schema column names
 
 ### Pending Todos
 
@@ -215,6 +217,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-18T21:31:48.383Z
-Stopped at: Completed 04-GAP-04-PLAN.md (Phase 4 GAP-04: AddMemberForm onMouseDown fix for cmdk focus-loss race)
+Last session: 2026-06-19T00:31:13.195Z
+Stopped at: Completed 05-GAP-01-PLAN.md (Phase 5 GAP-01: Evidence files endpoint + P3 idempotency guard)
 Resume file: None
