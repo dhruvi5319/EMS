@@ -94,7 +94,8 @@ export function StatementDetailPage() {
   const isAN = roles.includes('AN');
 
   // Role-gated views
-  const isIRView = isIR && statement?.assigned_to === user?.id;
+  // IR panel: show for any IR user (assigned_to check was too strict — prevents unassigned IR from reviewing)
+  const isIRView = isIR;
   const isANView = isAN && statement?.assigned_back_to === user?.id;
 
   // Load statement, team members, evidence
