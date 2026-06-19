@@ -109,7 +109,7 @@ Plans:
 - [ ] 04-GAP-05-PLAN.md — Gap closure: fix mapMilestone() date bug (knex returns Date objects; instanceof Date guard + toISOString().split('T')[0] yields correct YYYY-MM-DD)
 
 ### Phase 5: Evidence, Findings, and Gate P3
-**Status**: executing
+**Status**: awaiting verify
 **Goal**: Analysts can upload and manage evidence, link evidence to objectives, create findings, and a QA Reviewer can mark all objectives sufficient and approve Gate P3
 **Depends on**: Phase 4
 **Requirements**: F8, F9, F10
