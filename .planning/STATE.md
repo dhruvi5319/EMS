@@ -3,14 +3,14 @@ pivota_spec_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: "Completed 05-GAP-02-PLAN.md (Phase 5 GAP-02: EvidenceDetailPage re-fetch, GateP3ReviewPage already-approved banner, FindingsListPage p3 state + allPass fix)"
-last_updated: "2026-06-19T00:31:41.106Z"
+stopped_at: "Completed 05-GAP-03-PLAN.md (Phase 5 GAP-03: GapObjectiveCard P3 Blocker label fix + evidence-objective routing conflict fix)"
+last_updated: "2026-06-19T01:00:34.829Z"
 last_activity: "2026-06-18 — Phase 4 complete: F4 engagement backend+shell UI, F5 team+milestones, F6 planning record form, F7 Gate P2 review panel — all self-checks passed"
 progress:
   total_phases: 6
   completed_phases: 6
-  total_plans: 47
-  completed_plans: 47
+  total_plans: 48
+  completed_plans: 48
   percent: 81
 ---
 
@@ -103,6 +103,7 @@ Progress: [████████░░] 81%
 | Phase 04-engagement-setup-and-gate-p2 PGAP-04 | 1min | 1 tasks | 1 files |
 | Phase 05-evidence-findings-and-gate-p3 PGAP-01 | 2min | 2 tasks | 2 files |
 | Phase 05-evidence-findings-and-gate-p3 PGAP-02 | 1min | 3 tasks | 3 files |
+| Phase 05-evidence-findings-and-gate-p3 PGAP-03 | 2min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -209,6 +210,7 @@ Recent decisions affecting current work:
 - [Phase 05-evidence-findings-and-gate-p3]: P3 idempotency uses gate_type='P3'+status='passed' (not gate_name+decision) matching actual DB schema column names
 - [Phase 05-evidence-findings-and-gate-p3]: handleObjectiveLinked uses fetchEvidence() re-fetch (not optimistic update) — avoids race condition when coverage is null/stale
 - [Phase 05-evidence-findings-and-gate-p3]: allPass logic aligned with backend gate check: evidence_count > 0 AND sufficiency_status !== 'evidence_needed' (not the stricter 'sufficient' check)
+- [Phase 05-evidence-findings-and-gate-p3]: Move GET/POST/DELETE /:evidence_id/objectives into evidenceRouter — evidenceRouter is mounted at /:id/evidence and intercepts all /evidence/:evidence_id/* paths; moving handlers there fixes the 404 routing conflict
 
 ### Pending Todos
 
@@ -220,6 +222,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-19T00:31:41.104Z
-Stopped at: Completed 05-GAP-02-PLAN.md (Phase 5 GAP-02: EvidenceDetailPage re-fetch, GateP3ReviewPage already-approved banner, FindingsListPage p3 state + allPass fix)
+Last session: 2026-06-19T01:00:34.826Z
+Stopped at: Completed 05-GAP-03-PLAN.md (Phase 5 GAP-03: GapObjectiveCard P3 Blocker label fix + evidence-objective routing conflict fix)
 Resume file: None
