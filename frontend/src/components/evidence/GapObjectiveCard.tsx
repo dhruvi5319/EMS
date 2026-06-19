@@ -101,7 +101,7 @@ export const GapObjectiveCard: React.FC<GapObjectiveCardProps> = ({
           }}
         >
           <XCircle size={16} style={{ color: 'hsl(0 72% 51%)' }} />
-          Blocker
+          P3 Blocker
         </span>
       </div>
 
